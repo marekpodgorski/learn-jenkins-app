@@ -5,30 +5,6 @@ pipeline {
         NETLIFY_AUTH_TOKEN= credentials('netlify-token')
     }
     stages {
-        //My comment
-        /*
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
-            steps {
-                sh '''
-                    ls -la
-                    node --version
-                    npm --version
-                    npm ci
-                    npm run build
-                    ls -la
-                '''
-            }
-        }
-        */
-        /*
-            Comments block
-        */
         stage('Parallel stages') {
             parallel {
                 stage('Test') {
@@ -98,10 +74,10 @@ pipeline {
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --dir=build
                 '''
-            }
-            script {
+                script {
                     env.deploy_url = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json", returnStdout: true)
                 }
+            }
         }
         stage('Test e2e PreProd') {
             environment {
