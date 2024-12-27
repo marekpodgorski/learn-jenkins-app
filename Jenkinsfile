@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    environment {
+        NETLIFY_SITE_ID='ef8a7f56-0e1b-44a6-b16b-c85fd47bbe7f'
+    }
     stages {
         //My comment
         /*
