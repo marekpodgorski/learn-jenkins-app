@@ -92,11 +92,12 @@ pipeline {
             steps {
                 sh '''
                     npm install netlify-cli
+                    npm install node-jq
                     node_modules/.bin/netlify --version
                     echo "Deploying to pre prod. Site ID: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --dir=build
-                    echo "Small change"
+                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
                 '''
             }
         }
