@@ -97,10 +97,35 @@ pipeline {
                     echo "Deploying to pre prod. Site ID: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --dir=build
-                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
                 '''
             }
+            script {
+                    env.deploy_url = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json", returnStdout: true)
+                }
         }
+        stage('Test e2e PreProd') {
+            environment {
+                CI_ENVIRONMENT_URL="${env.deploy_url}"
+            }
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    junit 'jest-results/junit.xml'
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright e2e PreProd', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            }
+        }
+
         stage('Approval') {
             steps {
                 timeout(time: 15, unit:'MINUTES') {
