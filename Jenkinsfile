@@ -83,7 +83,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    npm install vetlify-cli -g
+                    npm install netlify-cli -g
                     netlify --version
                 '''
             }
