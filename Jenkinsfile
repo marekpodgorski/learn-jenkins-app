@@ -56,9 +56,14 @@ pipeline {
                         sh '''
                             npm install serve
                             node_modules/.bin/serve -s build &
-                            sleep 12
                             npx playwright test --reporter=html
                         '''
+                    }
+                    post {
+                        always {
+                            junit 'jest-results/junit.xml'
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright e2e local', reportTitles: '', useWrapperFileDirectly: true])
+                        }
                     }
                 }
             }
@@ -95,11 +100,28 @@ pipeline {
                 '''
             }
         }
-    }
-    post {
-        always {
-            junit 'jest-results/junit.xml'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright report', reportTitles: '', useWrapperFileDirectly: true])
+        stage('Test e2e Prod ') {
+            environment {
+                CI_ENVIRONMENT_URL='https://glowing-moxie-b08575.netlify.app'
+            }
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                    npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    junit 'jest-results/junit.xml'
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright e2e prod', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            }
         }
     }
+    
 }
